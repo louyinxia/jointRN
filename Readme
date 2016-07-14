@@ -2,8 +2,7 @@ This is a java project for disease named enity recognition and normalization.
 The program is tested on java runtime environment 1.8.
 
 The architecture of this project is shown as below:
-lib --- all the third-party libraries and tools
 data --- all data and Medic vocabulary
 src --- all the source code
-		perceptron --- model for disease entity recognition and normalization.
-		utils --- relevant utility classes
+ perceptron --- model for disease entity recognition and normalization.
+ utils --- relevant utility classes
