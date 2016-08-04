@@ -3,18 +3,12 @@ package perceptron;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 public class Evaluator {
@@ -22,16 +16,16 @@ public class Evaluator {
 	public BufferedWriter bwlog;
 	public String error_file;
 	public List<String> arrTestResult;
-	public List<String> arrTestStand;	
+	public List<String> arrTestStand;
 	// computer P, R, F of disease name recognition and normalization 
 	int iDiseCorrect = 0, iDisePred = 0, iDiseGold = 0;
 	int iDiseNormCorrect = 0, iDiseNormPred = 0, iDiseNormGold = 0;	
 
 	private static class Sentence {
-		String[] words;
-		String[] poss;
+		String[] entities;
+		String[] labels;
 		String[] senses;
-		String chars;
+		String words;
 	}
 
 	public Evaluator() {
@@ -54,6 +48,7 @@ public class Evaluator {
 
 	}
 
+
 	//computer disease P R, F
 	
 	public void diseaseComputer(){
@@ -69,6 +64,12 @@ public class Evaluator {
 			e.printStackTrace();
 		}
 	}
+	/**
+	 * compared gold standard with segmented sentence.
+	 * 
+	 * @param sStand
+	 * @param sResult
+	 */
 	public void processTwoSequence(String sStand,String sResult){
 		ArrayList<String> goldDiseases = new ArrayList<String>();
 		ArrayList<String> goldDiseaseSenses = new ArrayList<String>();
@@ -120,9 +121,9 @@ public class Evaluator {
 		
 	}
 		/*
-		 * propercess information of String 		 * 
+		 * process information of String 		 
 		 */
-		public void preInformation(String source, ArrayList<String> words, ArrayList<String> wordSenses){
+		public void preInformation(String source, ArrayList<String> entities, ArrayList<String> entitySenses){
 			 StringTokenizer stoken=new StringTokenizer(source," ");
 				while(stoken.hasMoreElements()){
 					String tempStr = stoken.nextToken();
@@ -134,8 +135,8 @@ public class Evaluator {
 						if( temIndex != -1){
 							String temDisease = theWordSense.substring(0, temIndex);
 							String temDiseaseSense = theWordSense.substring(temIndex+1);
-							words.add(temDisease);
-							wordSenses.add(temDiseaseSense);					
+							entities.add(temDisease);
+							entitySenses.add(temDiseaseSense);					
 						}else{
 							System.out.println("sStand is error");
 					}
@@ -148,11 +149,11 @@ public class Evaluator {
 	/**
 	 * save result.
 	 */
+
 	public void Save() {
 		float diseP = (float) (iDiseCorrect * 1.0 / iDisePred);
 		float diseR = (float) (iDiseCorrect * 1.0 / iDiseGold);
 		float diseF = (float) (2.0 * iDiseCorrect / (iDisePred + iDiseGold));
-		
 		
 		float diseNormalP = (float) (iDiseNormCorrect * 1.0 / iDiseNormPred);
 		float diseNormalR = (float) (iDiseNormCorrect * 1.0 / iDiseNormGold);
@@ -160,53 +161,51 @@ public class Evaluator {
 
 		try {
 			bwlog.write("recognition result: precise=" + diseP
-					+ "     recall rate=" + diseR + "   F=" + diseF + "\r\n");
-			
+					+ "     recall rate=" + diseR + "   F=" + diseF + "\r\n");			
 			bwlog.write("Normalization result: precise=" + diseNormalP
 					+ "     recall rate=" + diseNormalR + "   F=" + diseNormalF
 					+ "\r\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}	
-
+	}
 	public static int[] reco(Sentence goldSentence, Sentence predSentence) {
-		// seg: 0 goldWords 1 predWords
-		// seg: 2 recoWords
-		// tag: 3 recoPos
-		// tag: 4 goldSenses 5 predSenses 6 recoSenses
-     	// 7:是否相等， 0：相等，1：不等
+		// recognition: 0 goldEntities 1 predEntities
+		// recognition: 2 recoEntities
+		// normalization: 3 recoLabel
+		// normalization: 4 goldSenses 5 predSenses 6 recoSenses
+     	// 7:judge whether equal， 0：equal，1：not equal
 			
 		int[] predRes = new int[8];
-
 		for (int i = 0; i < 8; i++) {
 			predRes[i] = 0;
 		}
 
-		String[] goldWords = goldSentence.words;
-		String[] goldLabels = goldSentence.poss;
-		String[] predWords = predSentence.words;
-		String[] predLabels = predSentence.poss;
+		String[] goldEntities = goldSentence.entities;
+		String[] goldLabels = goldSentence.labels;
+		String[] predEntities = predSentence.entities;
+		String[] predLabels = predSentence.labels;
 		String[] goldSenses = goldSentence.senses;
-		String[] predSenses = predSentence.senses;		
+		String[] predSenses = predSentence.senses;
+		
 		
 		int m = 0, n = 0;
-		for (int i = 0; i < goldWords.length; i++) {
+		for (int i = 0; i < goldEntities.length; i++) {
 			predRes[0]++;
 			if (goldSenses[i] != null && goldSenses[i].length() > 0) {
 				predRes[4]++;
 			}
 		}
 
-		for (int i = 0; i < predWords.length; i++) {
+		for (int i = 0; i < predEntities.length; i++) {
 			predRes[1]++;
 			if (predSenses[i] != null && predSenses[i].length() > 0) {
 				predRes[5]++;
 			}
 		}
 		boolean bequal = true;
-		while (m < predWords.length && n < goldWords.length) {
-			if (predWords[m].equals(goldWords[n])) {
+		while (m < predEntities.length && n < goldEntities.length) {
+			if (predEntities[m].equals(goldEntities[n])) {
 				predRes[2]++;
 				if (predSenses[m].length() > 0
 						&& predSenses[m].equals(goldSenses[n])) {
@@ -228,20 +227,20 @@ public class Evaluator {
 			} else {
 				if (bequal == true)
 					bequal = false;
-				int lgold = goldWords[n].length();
-				int lpred = predWords[m].length();
+				int lgold = goldEntities[n].length();
+				int lpred = predEntities[m].length();
 				int lm = m + 1;
 				int ln = n + 1;
 				int sm = m;
 				int sn = n;
 
-				while (lm < predWords.length || ln < goldWords.length) {
-					if (lgold > lpred && lm < predWords.length) {
-						lpred = lpred + predWords[lm].length();
+				while (lm < predEntities.length || ln < goldEntities.length) {
+					if (lgold > lpred && lm < predEntities.length) {
+						lpred = lpred + predEntities[lm].length();
 						sm = lm;
 						lm++;
-					} else if (lgold < lpred && ln < goldWords.length) {
-						lgold = lgold + goldWords[ln].length();
+					} else if (lgold < lpred && ln < goldEntities.length) {
+						lgold = lgold + goldEntities[ln].length();
 						sn = ln;
 						ln++;
 					} else {
@@ -263,34 +262,34 @@ public class Evaluator {
 		Sentence sent = new Sentence();
 		if (tagSequence.trim().length() < 1)
 			return sent;
-		String[] wordposses = tagSequence.split("\\s+");
+		String[] entityLabels = tagSequence.split("\\s+");
 		// StringTokenizer st=new StringTokenizer(tagSequence," ");
-		sent.poss = new String[wordposses.length];
-		sent.words = new String[wordposses.length];
-		sent.senses = new String[wordposses.length];
-		sent.chars = "";
-		for (int idx = 0; idx < wordposses.length; idx++) {
-			int index = wordposses[idx].indexOf("_");
-			String wordSense = wordposses[idx].substring(0, index);
+		sent.labels = new String[entityLabels.length];
+		sent.entities = new String[entityLabels.length];
+		sent.senses = new String[entityLabels.length];
+		sent.words = "";
+		for (int idx = 0; idx < entityLabels.length; idx++) {
+			int index = entityLabels[idx].indexOf("_");
+			String wordSense = entityLabels[idx].substring(0, index);
 			int wordIndex = wordSense.indexOf("|");
 			if (wordIndex >= 0) {
 				String temword = wordSense.substring(0, wordIndex);
 				String temsense = wordSense.substring(wordIndex + 1);
 				if (temword.equals(temsense)) {
-					sent.words[idx] = temword;
+					sent.entities[idx] = temword;
 					sent.senses[idx] = "";
 				} else {
-					sent.words[idx] = temword;
+					sent.entities[idx] = temword;
 					sent.senses[idx] = temsense;
 				}
 				/*sent.words[idx] = temword;
 				sent.senses[idx] = temsense;*/
 			} else {
-				sent.words[idx] = wordSense;
+				sent.entities[idx] = wordSense;
 				sent.senses[idx] = "";
 			}
-			sent.poss[idx] = wordposses[idx].substring(index + 1);
-			sent.chars = sent.chars + sent.words[idx];
+			sent.labels[idx] = entityLabels[idx].substring(index + 1);
+			sent.words = sent.words + sent.entities[idx];
 		}
 
 		return sent;
@@ -300,24 +299,24 @@ public class Evaluator {
 		Sentence sent = new Sentence();
 		if (tagSequence.trim().length() < 1)
 			return sent;
-		String[] wordposses = tagSequence.split("\\s+");
-		sent.poss = new String[wordposses.length];
-		sent.words = new String[wordposses.length];
-		sent.senses = new String[wordposses.length];
-		sent.chars = "";
-		for (int idx = 0; idx < wordposses.length; idx++) {
-			int index = wordposses[idx].indexOf("_");
-			String wordSense = wordposses[idx].substring(0, index);
+		String[] entityLabels = tagSequence.split("\\s+");
+		sent.labels = new String[entityLabels.length];
+		sent.entities = new String[entityLabels.length];
+		sent.senses = new String[entityLabels.length];
+		sent.words = "";
+		for (int idx = 0; idx < entityLabels.length; idx++) {
+			int index = entityLabels[idx].indexOf("_");
+			String wordSense = entityLabels[idx].substring(0, index);
 			int wordIndex = wordSense.indexOf("|");
 			if (wordIndex >= 0) {
-				sent.words[idx] = wordSense.substring(0, wordIndex);
+				sent.entities[idx] = wordSense.substring(0, wordIndex);
 				sent.senses[idx] = wordSense.substring(wordIndex + 1);
 			} else {
-				sent.words[idx] = wordSense;
+				sent.entities[idx] = wordSense;
 				sent.senses[idx] = wordSense;
 			}
-			sent.poss[idx] = wordposses[idx].substring(index + 1);
-			sent.chars = sent.chars + sent.words[idx];
+			sent.labels[idx] = entityLabels[idx].substring(index + 1);
+			sent.words = sent.words + sent.entities[idx];
 		}
 
 		return sent;
@@ -330,16 +329,12 @@ public class Evaluator {
 		String errorfile = "E:\\test\\temp\\testError";
 		List<String> arrTestSource = new ArrayList<String>();
 		List<String> arrTestResult = new ArrayList<String>();
-		File infile = new File(standfile);
 		BufferedInputStream infis;
-		File outfile = new File(resultfile);
 		BufferedInputStream outfis;
 		try {
-			bwlog = new BufferedWriter(new FileWriter(
-					"E:\\test\\temp\\log"));
+			bwlog = new BufferedWriter(new FileWriter("E:\\test\\temp\\log"));
 			infis = new BufferedInputStream(new FileInputStream(standfile));
-			BufferedReader inreader = new BufferedReader(new InputStreamReader(
-					infis, "UTF8"));
+			BufferedReader inreader = new BufferedReader(new InputStreamReader(infis, "UTF8"));
 			String line = "";
 			while ((line = inreader.readLine()) != null) {
 				if (line.trim().length() > 0) {
@@ -355,9 +350,7 @@ public class Evaluator {
 					arrTestResult.add(line.trim());
 				}
 			}
-			Evaluator ob = new Evaluator(arrTestResult, arrTestSource, bwlog,
-					errorfile);
-//			ob.Computer();
+			Evaluator ob = new Evaluator(arrTestResult, arrTestSource, bwlog, errorfile);
 			ob.diseaseComputer();
 			bwlog.close();
 			infis.close();
@@ -371,9 +364,9 @@ public class Evaluator {
 		String rent = "";
 		StringTokenizer st = new StringTokenizer(result, " ");
 		while (st.hasMoreElements()) {
-			String wordposses = st.nextToken();
-			int index = wordposses.indexOf("_");
-			String wordSense = wordposses.substring(0, index);
+			String entityLabels = st.nextToken();
+			int index = entityLabels.indexOf("_");
+			String wordSense = entityLabels.substring(0, index);
 			int wordIndex = wordSense.indexOf("|");
 
 			if (wordIndex >= 0) {
@@ -387,7 +380,7 @@ public class Evaluator {
 			} else {
 				rent += wordSense;
 			}
-			rent += "_" + wordposses.substring(index + 1) + " ";
+			rent += "_" + entityLabels.substring(index + 1) + " ";
 		}
 		return rent.trim();
 	}
