@@ -705,8 +705,8 @@ public class JointRN {
 		double dScore = 0.0;
 		String w_0 = "", w_1 = "", w_2 = "", w1 = "", w2 = "";		
 		String e_0 = "", e_1 = "", e_2 = "", l_0 = "", l_1 = "", l_2 = "";
-		String start_w_0 = "", end_w_0 = "";
-		String start_e_1 = "", end_e_1 = "", end_e_2 = "";
+		
+		String end_e_1 = "", end_e_2 = "";
 		String n_1 = "", n_2 = "", n_3 = ""; 											
 		String start_n_1 = "", end_n_1 = "", end_n_2 = "";
 		int len_n_1 = 0, len_n_2 = 0;
@@ -715,16 +715,12 @@ public class JointRN {
 		int curIndex = state.curIndex;		
 		String normalSent = "";
 		List<String> posArray = new ArrayList<String>();
-		List<String> stemArray = new ArrayList<String>();
-		
 		String p_0="", p_1 = "", p_2 ="" ;
 		if(isTrain){
-			posArray = this.trainPosArray;
-			stemArray = this.trainStemArray;			
+			posArray = this.trainPosArray;						
 		}		
 		else {
 			posArray = this.testPosArray;
-			stemArray = this.testStemArray;
 		}
 		//initialize p_0, p_1,p_2
 	   if(curIndex < posArray.size()){
@@ -747,28 +743,7 @@ public class JointRN {
 		}else{
 			p_2 = "*P*";
 		}
-//		//initialize s_0, s_1,s_2
-//		   if(curIndex < stemArray.size()){
-//			   s_0 = posArray.get(curIndex);
-//
-//			}else{
-//				s_0 = "*s*";
-//			}			
-//			if(curIndex == 0){
-//				s_1 = "*s*";
-//				s_2 = "*s*";
-//			}
-//			if(curIndex >= 1  && curIndex < stemArray.size()){			
-//				s_1 = posArray.get(curIndex - 1);
-//			}else{
-//				s_1 = "*s*";
-//			}
-//			if(curIndex >= 2 && curIndex < posArray.size()){			
-//				s_2 = posArray.get(curIndex - 2);	
-//			}else{
-//				s_2 = "*s*";
-//			}
-//			
+	
 		int curSentenceSize = state.curSentence.length;
 		if(state.curIndex < curSentenceSize-1){
 			if(state.curIndex == curSentenceSize-2){
@@ -926,11 +901,9 @@ public class JointRN {
 				}
 			}			
 
-			if (len_e_1 > 0) {
-				start_e_1 = temE1s[0];
+			if (len_e_1 > 0) {				
 				end_e_1 = temE1s[len_e_1-1];
 			} else {
-				start_e_1 = "S1";
 				end_e_1 = "S1";
 			}
 			if (len_e_2 > 0) {
