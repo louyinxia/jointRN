@@ -9,7 +9,7 @@ public class Feature {
 	public int lastUpdateIndex = 0; // lasting index of update
 	public double aveWeight = 0; // average weight
 	public enum featureName {
-		CharUnigram, CharBigram;
+		WordUnigram, WordBigram;
 	}
 	public Feature() {
 	}
