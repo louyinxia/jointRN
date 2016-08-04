@@ -13,13 +13,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
-
 import perceptron.State;
 import utils.Tool;
 import utils.Group;
+
 //Joint Model For recognition and Normalization 
-public class JointRN {
-	//-traintestEval E:/test/trainData E:/test/testData E:/test/testData E:/test/out/out_1031/model E:/test/out/out_1031// 60 E:/test/dict 16 log " " " " true
+public class JointRN {	
 	public Double MINVALUE = -Double.MAX_VALUE;
 	public String train_file = "";
 	public String dev_file = "";
@@ -38,8 +37,8 @@ public class JointRN {
 	public int number_of_train = 0;
 	public int search_width = 16;	
 	
-	public HashMap<String, Integer> hsngramChar; // char lm
-	public HashMap<String, Integer> hsngramWord; // word lm
+	public HashMap<String, Integer> hsngramChar; 
+	public HashMap<String, Integer> hsngramWord; 
 
 	public List<String> arrTrainSource; // training sentences
 	public List<State> bestStates;// best states
@@ -65,108 +64,27 @@ public class JointRN {
 			"yyyy-MM-dd HH:mm:ss SSS ");
 	HeapSort heapSort = new HeapSort();
 	
-	//features
+	
 	public String train_POS_file = "";
-//	public String dev_POS_file = "";
     public String test_POS_file = "";
-    public String train_stem_file = "";
-    public String test_stem_file = "";
     public List<String> diseaseAbbres;
 	public List<String> trainTokenPOSSentences; // train token POS
-//	public List<String> devTokenPOSSentences;
 	public List<String> testTokenPOSSentences; // test token POS
 	public List<String> trainTokenStemSentences;// stem sentences of train
 	public List<String> testTokenStemSentences; 
 	public List<String> trainPosArray; //the POS of each train sentence
 	public List<String> testPosArray; //the POS of each test sentence
-//	public List<String> devPosArray; //	
+
 	public List<String> trainStemArray; //the stem of each train sentence
 	public List<String> testStemArray; //the stem of each test sentence
-//	public List<String> devStemArray; // the stem of eash dec sentence
 	public Tool tool ;
 	
-//	public static int MAXNUM = 5000;
+
 	public HashMap<String, String> hmWordSenseSet = new HashMap<String, String>();
-	public boolean IsSPModel = true; // true for joint segmentation and pos
-										// tagging model. false for joint
-										// segmentation, pos tagging and
-										// normalization
+	public boolean IsSPModel = true; // true for joint recognition and normalization										
 	public boolean isTrain = true;
 
-	/**
-	 * initial training
-	 * 
-	 * @param train_file
-	 * @param number_of_train
-	 * @param model_file
-	 * @param number_of_iterations
-	 * @param bNewTrain
-	 * @param search_width
-	 * @param outfile_path
-	 * @param sense_file
-	 * @param out_path
-	 * @param lmChar_file
-	 * @param lmWord_file
-	 */
-	public JointRN(String train_file, int number_of_train, String model_file,
-			int number_of_iterations, boolean bNewTrain, int search_width,
-			String outfile_path, String sense_file, String out_path,
-			String lmChar_file, String lmWord_file,Tool tool) {
-		this.train_file = train_file;
-		this.number_of_train = number_of_train;
-		this.model_file = model_file;
-		this.number_of_iterations = number_of_iterations;
-		this.bNewTrain = bNewTrain;
-		this.search_width = search_width;
-		this.output_path = out_path;
-		this.sense_file = sense_file;
-		this.lmChar_file = lmChar_file;
-		this.lmWord_file = lmWord_file;
-		try {
-			bwlog = new BufferedWriter(new FileWriter(this.output_path
-					+ "log.txt"));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 	public JointRN() {
-	}
-
-	/**
-	 * initial
-	 * 
-	 * @param test_file
-	 * @param model_file
-	 * @param output_file
-	 * @param evaluationError_file
-	 * @param search_width
-	 * @param sense_file
-	 * @param out_path
-	 * @param lm_file
-	 * @param lmWord_file
-	 */
-	public JointRN(String test_file, String model_file, String output_file,
-			String evaluationError_file, int search_width, String sense_file,
-			String out_path, String lm_file, String lmWord_file,Tool tool) {
-		this.test_file = test_file;
-		// this.number_of_test = number_of_test;
-		this.model_file = model_file;
-		this.output_file = output_file;
-		this.evaluationError_file = evaluationError_file;
-		this.search_width = search_width;
-		this.sense_file = sense_file;
-		this.output_path = out_path;
-		this.lmChar_file = lmChar_file;
-		this.lmWord_file = lmWord_file;
-		try {
-			bwlog = new BufferedWriter(new FileWriter(this.output_path
-					+ "log.txt"));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	/**
@@ -204,18 +122,12 @@ public class JointRN {
 		
 		this.tool.CTDdisease = tool.CTDdisease; //before tool must be have "this"
 		this.train_POS_file = tool.trainPOS;
-//		this.dev_POS_file = tool.devPOS;
 		this.test_POS_file = tool.testPOS;
-		this.train_stem_file = tool.trainStem;
-		this.test_stem_file = tool.testStem;
+
 		this.trainTokenPOSSentences = new ArrayList<String>();
-//		this.devTokenPOSSentences = new ArrayList<String>();
 	    this.testTokenPOSSentences = new ArrayList<String>();
-	    this.trainTokenStemSentences = new ArrayList<String>();
-	    this.testTokenStemSentences = new ArrayList<String>();
 	    
 	    this.trainPosArray = new ArrayList<String>();
-//	    this.devPosArray = new ArrayList<String>();
 	    this.testPosArray = new ArrayList<String>();	
 	    this.trainStemArray = new ArrayList<String>();
 	    this.testStemArray = new ArrayList<String>();
@@ -252,10 +164,7 @@ public class JointRN {
 				this.goldActions = getGoldActions(this.arrTrainSource.get(i));
 				
 				this.trainPosArray.clear();	
-				this.trainPosArray = setTokenPosArray(i,this.trainTokenPOSSentences); //set tokenPosArray of each sentence
-				
-				this.trainStemArray.clear();
-				this.trainStemArray = setTokenStemArray(i,this.trainTokenStemSentences);
+				this.trainPosArray = setTokenPosArray(i,this.trainTokenPOSSentences); //set tokenPosArray of each sentence				
 
 				if(new StringTokenizer(this.CurSentence," ").countTokens() != goldActions.size() -1){	
 					System.out.println("error...");
@@ -264,25 +173,7 @@ public class JointRN {
 			}
 			model.AveWeight(curRoundIndexForTrain);
 			model.save(model_file + n);
-			bwlog.write("train round end:" + n + "   " + df.format(new Date())
-					+ "\r\n");
-			bwlog.write("develop start:" + "\r\n");
-			// development data
-			/*this.arrDevResult.clear();
-			for (int i = 0; i < arrDevSource.size(); i++) {
-
-				this.CurSentence = UnTagSentence(this.arrDevSource.get(i));
-				this.devPosArray.clear();
-				this.devPosArray = setTokenPosArray(i,this.devTokenPOSSentences);
-				this.arrDevResult.add(Decoder());
-			}
-			save(this.arrDevResult, output_path + this.output_file + n);
-
-			Evaluator eva = new Evaluator(this.arrDevResult, arrDevSource,
-					bwlog, this.output_path + evaluationError_file + n);
-			eva.diseaseComputer();	
-			bwlog.write("develop end:" + "\r\n");
-			bwlog.write("test start:" + "\r\n");*/
+			bwlog.write("train round end:" + n + "   " + df.format(new Date()) + "\r\n");
 			// test data
 			this.arrTestResult.clear();
 			this.isTrain = false;
@@ -291,9 +182,7 @@ public class JointRN {
 				
 				this.testPosArray.clear();	
 				this.testPosArray = setTokenPosArray(i,this.testTokenPOSSentences);
-				
-				this.testStemArray.clear();
-				this.testStemArray = setTokenPosArray(i,this.testTokenStemSentences);
+
 				this.arrTestResult.add(Decoder());
 			}
 			save(this.arrTestResult, output_path + this.output_file + n);
@@ -382,11 +271,7 @@ public class JointRN {
 	 */
 	public void initialPOSOrStem(){
 		initialTokenPOSOrStem(this.train_POS_file, this.trainTokenPOSSentences);
-//	    initialTokenPOSOrStem(this.dev_POS_file, this.devTokenPOSSentences);
-	    initialTokenPOSOrStem(this.test_POS_file, this.testTokenPOSSentences);
-	    initialTokenPOSOrStem(this.train_stem_file, this.trainTokenStemSentences);
-//	    initialTokenPOSOrStem(this.dev_Stem_file, this.devTokenStemSentences);
-	    initialTokenPOSOrStem(this.test_stem_file, this.testTokenStemSentences);  
+	    initialTokenPOSOrStem(this.test_POS_file, this.testTokenPOSSentences); 
 	}
 
 	/**
@@ -445,8 +330,7 @@ public class JointRN {
 		BufferedInputStream fis;
 		try {
 			fis = new BufferedInputStream(new FileInputStream(file));
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					fis, "UTF8"));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF8"));
 			String line = "";
 			int i = 0;
 			while ((line = reader.readLine()) != null) {
@@ -547,11 +431,11 @@ public class JointRN {
 		this.agenda = new State[this.search_width];
 		this.agenda[0] = new State();
 		this.agenda[0].bIsGold = true;
+
 		long st1 = System.nanoTime();
 		curRoundIndexForTrain++;
 		String[] arrCurWord = this.CurSentence.split(" ");
 		int wordlen = arrCurWord.length;
-
 		for (int i = 0; i <= wordlen; i++) {
 			String curSChar = "";
 			if (i < wordlen){
@@ -568,22 +452,24 @@ public class JointRN {
 				temAgenda[o].score = MINVALUE;
 				temAgenda[o].bIsGold = false;
 				temAgenda[o].curIndex = i;
-               			
+                for(int k = 0; k < arrCurWord.length; k++){
+				   temAgenda[o].curSentence[k] = arrCurWord[k];
+				}				
 			}
 			long st2 = System.nanoTime();
 			for (int j = 0; j < agendaLen; j++) {
 				agenda[j].curIndex = i;
-				
+				agenda[j].curSentence = arrCurWord;
 				State state = agenda[j];
 				
-				if (i > 0 && state.bStart)//i>0, state.bStart=true,这是不正确的，正常的是i>0, state.bStart等于false
+				if (i > 0 && state.bStart)
 					continue;
 
 				ArrayList<String> arrSenseSet = new ArrayList();
 				if (state.size >= 1) {
-					arrSenseSet = GetNormalSetByWord(state.arrWord[state.size - 1]);
+					arrSenseSet = GetNormalSetByWord(state.arrEntity[state.size - 1]);
 				}
-				if (i > 0 && i < wordlen) {//middle
+				if (i > 0 && i < wordlen) {
 					if(state.size>=1 && state.arrTag[state.size-1].equals("Y")){
 						State tempCands = Append(state, curSChar, null, false); 																			
 						if (tempCands.score > temAgenda[0].score) {
@@ -595,7 +481,7 @@ public class JointRN {
 						}
 					}
 				}
-				if (i == wordlen) {//finish
+				if (i == wordlen) {
 					if (arrSenseSet.size() > 0) {
 						for (int m = 0; m < arrSenseSet.size(); m++) {
 							State temCand = Finish(state, null, false, arrSenseSet.get(m));// end action
@@ -617,12 +503,14 @@ public class JointRN {
 						}
 					}
 				} else {
-					for (int k = 0; k < State.arrPOS.length; k++) {
+					for (int k = 0; k < State.arrLabel.length; k++) {
 						if (i == 0) {
 							{
-								State temCand = Sep(state, curSChar, k, null,false, "");
+								State temCand = Sep(state, curSChar, k, null,
+										false, "");
 								if (temCand.score >= temAgenda[0].score) {
-									if (state.bIsGold == true && this.goldActions.get(i) == k) {
+									if (state.bIsGold == true
+											&& this.goldActions.get(i) == k) {
 										temCand.bIsGold = true;
 									} else
 										temCand.bIsGold = false;
@@ -631,11 +519,11 @@ public class JointRN {
 							}
 						}
 						
-						if (arrSenseSet.size() > 0) {
-							for (int m = 0; m < arrSenseSet.size(); m++) {
-								State temCand = Sep(state, curSChar, k,
+							if (arrSenseSet.size() > 0) {
+								for (int m = 0; m < arrSenseSet.size(); m++) {
+									State temCand = Sep(state, curSChar, k,
 											null, false, arrSenseSet.get(m));// sep action
-								if (temCand.score >= temAgenda[0].score) {
+									if (temCand.score >= temAgenda[0].score) {
 
 										if (state.bIsGold == true
 												&& this.goldActions.get(i) == k) {
@@ -657,13 +545,12 @@ public class JointRN {
 				}
 			}
 			// System.out.println("1:" + (System.nanoTime() - st2));
-			//wi执行完
 			st2 = System.nanoTime();
 			this.agenda = temAgenda;			
 			boolean bEqual = false;
 			for (int m = 0; m < this.agenda.length; m++) {
 				if (this.agenda[m].bIsGold == true) {
-					bEqual = true; //agenda[m] 预测正确，退出for(m)循环，直接预测下一个单词wi+1预测。
+					bEqual = true;
 					break;
 				}
 			}
@@ -673,7 +560,7 @@ public class JointRN {
 				State bestState = Best(this.agenda, 1)[0];
 				List<Integer> predActions = bestState.hisActions;
 				double bestScore = bestState.score;
-				double[] scores = updateParameters(predActions, bestState);//预测不正确，需要进行参数更新
+				double[] scores = updateParameters(predActions, bestState);
 				if (Math.abs(bestScore - scores[0]) > 0.00001) {
 //					System.out.println(bestScore+"score not match..."+ scores[0]);
 				}
@@ -683,7 +570,7 @@ public class JointRN {
 				return;
 			}
 		}
-		//sentence 执行完之后，进行参数更新
+		
 		long st2 = System.nanoTime();
 		this.agenda = Best(this.agenda, 1);
 		if (this.agenda[0].bIsGold == false) {
@@ -739,7 +626,7 @@ public class JointRN {
 
 				ArrayList<String> arrSenseSet = new ArrayList<String>(); 
 				if (state.size >= 1) {
-					arrSenseSet = GetNormalSetByWord(state.arrWord[state.size - 1]);
+					arrSenseSet = GetNormalSetByWord(state.arrEntity[state.size - 1]);
 				}
 
 				if (i > 0 && i < wordlen) {
@@ -761,7 +648,7 @@ public class JointRN {
 						}
 					}
 				} else {
-					for (int k = 0; k < State.arrPOS.length; k++) {
+					for (int k = 0; k < State.arrLabel.length; k++) {
 						if (i == 0) {
 							State temCand = Sep(state, curSChar, k, null, true,
 									"");
@@ -830,7 +717,7 @@ public class JointRN {
 		List<String> posArray = new ArrayList<String>();
 		List<String> stemArray = new ArrayList<String>();
 		
-		String p_0="", p_1 = "", p_2 ="", s_0 = "", s_1 = "", s_2 = "";
+		String p_0="", p_1 = "", p_2 ="" ;
 		if(isTrain){
 			posArray = this.trainPosArray;
 			stemArray = this.trainStemArray;			
@@ -842,6 +729,7 @@ public class JointRN {
 		//initialize p_0, p_1,p_2
 	   if(curIndex < posArray.size()){
 		   p_0 = posArray.get(curIndex);
+
 		}else{
 			p_0 = "*p*";
 		}			
@@ -855,47 +743,49 @@ public class JointRN {
 			p_1 = "*P*";
 		}
 		if(curIndex >= 2 && curIndex < posArray.size()){			
-			p_2 = posArray.get(curIndex - 2);
+			p_2 = posArray.get(curIndex - 2);	
 		}else{
 			p_2 = "*P*";
 		}
-		if(p_0.indexOf("_")!= -1){
-			p_0 = p_0.substring(p_0.indexOf("_")+1);
-		}
-		if(p_1.indexOf("_")!= -1){
-			p_1 = p_1.substring(p_1.indexOf("_")+1);
-		}
-		if(p_2.indexOf("_")!= -1){
-			p_2 = p_2.substring(p_2.indexOf("_")+1);
-		}
-		//initialize s_0, s_1,s_2
-		   if(curIndex < stemArray.size()){
-			   s_0 = posArray.get(curIndex);
-			   s_0 = s_0.substring(s_0.lastIndexOf("_")+1, s_0.length());
-
+//		//initialize s_0, s_1,s_2
+//		   if(curIndex < stemArray.size()){
+//			   s_0 = posArray.get(curIndex);
+//
+//			}else{
+//				s_0 = "*s*";
+//			}			
+//			if(curIndex == 0){
+//				s_1 = "*s*";
+//				s_2 = "*s*";
+//			}
+//			if(curIndex >= 1  && curIndex < stemArray.size()){			
+//				s_1 = posArray.get(curIndex - 1);
+//			}else{
+//				s_1 = "*s*";
+//			}
+//			if(curIndex >= 2 && curIndex < posArray.size()){			
+//				s_2 = posArray.get(curIndex - 2);	
+//			}else{
+//				s_2 = "*s*";
+//			}
+//			
+		int curSentenceSize = state.curSentence.length;
+		if(state.curIndex < curSentenceSize-1){
+			if(state.curIndex == curSentenceSize-2){
+				w1 = state.curSentence[state.curIndex +1];
+				w2 = "*S*";
 			}else{
-				s_0 = "*s*";
-			}			
-			if(curIndex == 0){
-				s_1 = "*s*";
-				s_2 = "*s*";
+				w1 = state.curSentence[state.curIndex +1];
+				w2 = state.curSentence[state.curIndex +2];
 			}
-			if(curIndex >= 1  && curIndex < stemArray.size()){			
-				s_1 = posArray.get(curIndex - 1);
-				s_1 = s_1.substring(s_1.lastIndexOf("_")+1, s_1.length());
-			}else{
-				s_1 = "*s*";
-			}
-			if(curIndex >= 2 && curIndex < posArray.size()){			
-				s_2 = posArray.get(curIndex - 2);
-				s_2 = s_2.substring(s_2.lastIndexOf("_")+1, s_2.length());
-			}else{
-				s_2 = "*s*";
-			}	
+		}else{
+			w1 = "*S*";
+			w2 = "*S*";
+		}	
 
 		if (size > 0) {
 			if (state.lastAction != 2000) {
-				e_0 = state.arrWord[size - 1];
+				e_0 = state.arrEntity[size - 1];
 				l_0 = state.arrTag[size - 1];				
 				e_1 = "*S*";
 				l_1 = "*T*";
@@ -904,12 +794,12 @@ public class JointRN {
 				l_2 = "*T*";
 				n_2 = "*S*";
 				if (size > 1) {
-					e_1 = state.arrWord[size - 2];
+					e_1 = state.arrEntity[size - 2];
 					l_1 = state.arrTag[size - 2];
 					n_1 = state.arrNormal[size - 2];			
 				}
 				if (size > 2) {
-					e_2 = state.arrWord[size - 3];
+					e_2 = state.arrEntity[size - 3];
 					l_2 = state.arrTag[size - 3];
 					n_2 = state.arrNormal[size - 3];				
 				}
@@ -929,13 +819,13 @@ public class JointRN {
 			} else {
 				e_0 = "*S*";
 				l_0 = "*T*";
-				e_1 = state.arrWord[size - 1];
+				e_1 = state.arrEntity[size - 1];
 				l_1 = state.arrTag[size - 1];
 				n_1 = state.arrNormal[size - 1];				
 				e_2 = "*S*";
 				l_2 = "*T*";
 				if (size > 1) {
-					e_2 = state.arrWord[size - 2];
+					e_2 = state.arrEntity[size - 2];
 					l_2 = state.arrTag[size - 2];
 					n_2 = state.arrNormal[size - 2];
 				}
@@ -1063,38 +953,42 @@ public class JointRN {
 		 
 			Feature fe = null;
 			String strfeat = null;
+			//	
 			
+		
+			
+			//
 			if (state.lastAction == 1000) {// append
-				strfeat = "OrgConsecutiveWords=" + w_1 + w_0;//1
+				strfeat = "OrgConsecutiveWords=" + w_1 + w_0;
 				if (fvs != null)
 					fvs.add(strfeat);
 				fe = model.m_mapOrgConsecutiveWords.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight : fe.weight;				
 
-				strfeat = "OrgTagByChar=" + l_0 + w_0;//2
+				strfeat = "OrgLabelByWord=" + l_0 + w_0;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapOrgTagByChar.get(strfeat);
+				fe = model.m_mapOrgLabelByWord.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight : fe.weight;
 			
-				strfeat = "OrgTaggedCharByFirstChar=" + w_0 + l_0 + w_1;//3
+				strfeat = "OrgLabeledWordByFirstWord=" + w_0 + l_0 + w_1;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapOrgTaggedCharByFirstChar.get(strfeat);
+				fe = model.m_mapOrgLabeledWordByFirstWord.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight : fe.weight;
 				
-				strfeat = "OrgTaggedCharByFirstTaggedChar=" + w_0 + l_0 + w_1 + l_1;//4
+				strfeat = "OrgLabeledWordByFirstLabeledWord=" + w_0 + l_0 + w_1 + l_1;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapOrgTaggedCharByFirstTaggedChar.get(strfeat);
+				fe = model.m_mapOrgLabeledWordByFirstLabeledWord.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight : fe.weight;
 				
-                String temW_0 = e_0.replaceAll("#", " ");	 //run a w_0			
-				if(this.tool.CTDdisease.list.contains(temW_0))//5
+                String temW_0 = e_0.replaceAll("#", " ");	 		
+				if(this.tool.CTDdisease.list.contains(temW_0))
 				{
 					strfeat = "OrgIsDisease=1";
 					if (fvs != null)
@@ -1106,164 +1000,156 @@ public class JointRN {
 				
 			} else {	//SEP	
 
-				strfeat = "OrgTagCharPOS=" + w_0 + p_0;//1
+				strfeat = "OrgWordPOS=" + w_0 + p_0;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model. m_mapOrgTagCharPOS.get(strfeat);
+				fe = model. m_mapOrgWordPOS.get(strfeat);
 				if (fe != null)
-				   dScore += bAverage ? fe.aveWeight : fe.weight;
-					
-				strfeat = "OrgTagPOS=" + w_1 + w_0 + p_0 ;//2
+				   dScore += bAverage ? fe.aveWeight : fe.weight;					
+				strfeat = "OrgConsecutiveWordsPOS=" + w_1 + w_0 + p_0 ;
 				 if (fvs != null)
 					fvs.add(strfeat);
-				  fe = model.  m_mapOrgTagPOS.get(strfeat);
+				  fe = model.  m_mapOrgConsecutiveWordsPOS.get(strfeat);
 				if (fe != null)
 				    dScore += bAverage ? fe.aveWeight : fe.weight;
 				if(len_e_1 > 1){
-				    strfeat = "OrgCharsAndPOSAndTags=" + w_2 + w_1 + p_2 + p_1 + l_1;//3
+				    strfeat = "OrgWordsAndPOSAndLabel=" + w_2 + w_1 + p_2 + p_1 + l_1;
 				    if (fvs != null)
 					fvs.add(strfeat);
-				       fe = model.m_mapOrgCharsAndPOSAndTags.get(strfeat);
+				       fe = model.m_mapOrgWordsAndPOSAndLabel.get(strfeat);
 				    if (fe != null)
 					   dScore += bAverage ? fe.aveWeight : fe.weight;
-				    }
-				//w_1 prefix and suffix
+				    }			
 				int len_w_1 = w_1.length()>4 ? 4: w_1.length();	//4			
 				String prefix = w_1.substring(0,len_w_1);
-				strfeat = "OrgCharPrefix=" + prefix;
+				strfeat = "OrgWordPrefix=" + prefix;
 				if (fvs != null)
 					fvs.add(strfeat);  
-				fe = model. m_mapOrgCharPrefix.get(strfeat);
+				fe = model. m_mapOrgWordPrefix.get(strfeat);
 				if (fe != null)
 				   dScore += bAverage ? fe.aveWeight : fe.weight;				
 				String suffix = w_1.substring(w_1.length() - len_w_1, w_1.length());
-				strfeat = "OrgCharSuffix=" + suffix;
+				strfeat = "OrgWordSuffix=" + suffix;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model. m_mapOrgCharSuffix.get(strfeat);
+				fe = model. m_mapOrgWordSuffix.get(strfeat);
 				if (fe != null)
 				   dScore += bAverage ? fe.aveWeight : fe.weight;				  
-				strfeat = "OrgCurrentTag=" + e_1 + l_1; //5
+				strfeat = "OrgCurrentEntityLabel=" + e_1 + l_1; 
 				if(fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapOrgCurrentTag.get(strfeat); 
+				fe = model.m_mapOrgCurrentEntityLabel.get(strfeat); 
 				if (fe != null) 
 					dScore += bAverage ? fe.aveWeight : fe.weight;	
 				// 6
-				 strfeat = "OrgLastWordByLastChar=" + end_e_2 + end_e_1;
+				 strfeat = "OrgLastEntityByLastWord=" + end_e_2 + end_e_1;
 				 if(fvs != null)
 					 fvs.add(strfeat); 
-				 fe = model.m_mapOrgLastWordByLastChar.get(strfeat);
+				 fe = model.m_mapOrgLastEntityByLastWord.get(strfeat);
                  if (fe !=  null)
 	                dScore += bAverage ? fe.aveWeight : fe.weight;	                  				
 				if(this.tool.commonDiseaseNames.diseaseTerms.contains(w_1))//7
 				{
-					strfeat = "OrgLastCharVector=1";
+					strfeat = "OrgCommonDiseaseName=1";
 					if (fvs != null)
 						fvs.add(strfeat);
-					fe = model. m_mapOrgLastCharVector.get(strfeat);
+					fe = model. m_mapOrgCommonDiseaseName.get(strfeat);
 					if (fe != null)
 						dScore += bAverage ? fe.aveWeight : fe.weight;					
-				}							
+				}			
 				//Normalization
-				strfeat = "NorSeenWords=" + n_1; //1
+				strfeat = "NorSeenWord=" + n_1; //1
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapNorSeenWords.get(strfeat);
+				fe = model.m_mapNorSeenWord.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight * 1.0 : fe.weight * 1.0;
-				//3
-			   strfeat = "NorFirstAndLastChars=" + start_n_1 + end_n_1;
+			   strfeat = "NorFirstAndLastEntities=" + start_n_1 + end_n_1;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapNorFirstAndLastChars.get(strfeat);
+				fe = model.m_mapNorFirstAndLastEntities.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight * 1.0 : fe.weight * 1.0;   
-				//5
-				strfeat = "NorLengthByFirstChar=" + start_n_1 + len_n_1;
+				strfeat = "NorLengthByFirstEntity=" + start_n_1 + len_n_1;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapNorLengthByFirstChar.get(strfeat);
+				fe = model.m_mapNorLengthByFirstEntity.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight * 1.0 : fe.weight * 1.0;
 				//6
-				strfeat = "NorCurrentWordLastChar=" + end_n_2 + "_" + n_1;
+				strfeat = "NorCurrentEntityLastWord=" + end_n_2 + "_" + n_1;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapNorCurrentWordLastChar.get(strfeat);
+				fe = model.m_mapNorCurrentEntityLastWord.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight * 1.0 : fe.weight * 1.0;
 				//8
-				strfeat = "NorLengthByLastWord=" + n_2 + len_n_1;
+				strfeat = "NorLengthByLastEntity=" + n_2 + len_n_1;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapNorLengthByLastWord.get(strfeat);
+				fe = model.m_mapNorLengthByLastEntity.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight * 1.0 : fe.weight * 1.0;
 				//9
-				strfeat = "NorLastLengthByWord=" + len_n_2 + n_1;
+				strfeat = "NorLastLengthByEntity=" + len_n_2 + n_1;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapNorLastLengthByWord.get(strfeat);
+				fe = model.m_mapNorLastLengthByEntity.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight * 1.0 : fe.weight * 1.0;
-				//10
-				strfeat = "NorCurrentTag=" + n_1 + l_1;
+				strfeat = "NorCurrentWordLabel=" + n_1 + l_1;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapNorCurrentTag.get(strfeat);
+				fe = model.m_mapNorCurrentWordLabel.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight * 1.0 : fe.weight * 1.0;	
-				//14
-				strfeat = "NorLastTagByWord=" + n_1 + l_2;
+				strfeat = "NorLastLabelByEntity=" + n_1 + l_2;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapNorLastTagByWord.get(strfeat);
+				fe = model.m_mapNorLastLabelByEntity.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight * 1.0 : fe.weight * 1.0;
-				//15
-				strfeat = "NorTagByLastChar=" + end_n_1 + l_1;
+				strfeat = "NorLabelByLastWord=" + end_n_1 + l_1;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapNorTagByLastChar.get(strfeat);
+				fe = model.m_mapNorLabelByLastWord.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight * 1.0 : fe.weight * 1.0;
-		       //16
-				strfeat = "NorLastTagByTag=" + l_1 + l_0;
+				strfeat = "NorLastLabelByLabel=" + l_1 + l_0;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapNorLastTagByTag.get(strfeat);
+				fe = model.m_mapNorLastLabelByLabel.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight * 1.0 : fe.weight * 1.0;
-			  //25 
-				strfeat = "NorFirstCharLastWordByWord=" + start_n_1 + w_0;
+			 
+				strfeat = "NorFirstEntityCurrentWord=" + start_n_1 + w_0;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapNorFirstCharLastWordByWord.get(strfeat);
+				fe = model.m_mapNorFirstEntityCurrentWord.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight * 1.0 : fe.weight * 1.0;
-				//27		
-				strfeat = "NorTagWordTag=" + l_2 + n_1 + l_0;
+						
+				strfeat = "NorLastLabelEntityLabel=" + l_2 + n_1 + l_0;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapNorTagWordTag.get(strfeat);
+				fe = model.m_mapNorLastLabelEntityLabel.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight * 1.0 : fe.weight * 1.0;
-				//28
-				strfeat = "NorWordTagTag=" + n_2 + l_1 + l_0;
+				
+				strfeat = "NorLastEntityLabelByLabel=" + n_2 + l_1 + l_0;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapNorWordTagTag.get(strfeat);
+				fe = model.m_mapNorLastEntityLabelByLabel.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight * 1.0 : fe.weight * 1.0;
-               //29
-				strfeat = "NorTagByFirstChar=" + start_n_1 + l_1;
+               
+				strfeat = "NorLabelByFirstWord=" + start_n_1 + l_1;
 				if (fvs != null)
 					fvs.add(strfeat);
-				fe = model.m_mapNorTagByFirstChar.get(strfeat);
+				fe = model.m_mapNorLabelByFirstWord.get(strfeat);
 				if (fe != null)
 					dScore += bAverage ? fe.aveWeight * 1.0 : fe.weight * 1.0;		
-				//30
+				
 				if(len_n_1 >= 2){
 					int idx = n_1.lastIndexOf("#");
 					String n_1LastWord = n_1.substring(idx+1, n_1.length());
@@ -1424,7 +1310,7 @@ public class JointRN {
 	 * @param bestState
 	 * @return
 	 */
-	public double[] updateParameters(List<Integer> predActions, State bestState){
+	public double[] updateParameters(List<Integer> predActions, State bestState) {
 		State tmpState = new State();
 		State goldState = new State();
 		double[] scores = new double[2];
@@ -1439,6 +1325,7 @@ public class JointRN {
 			String [] curwords= this.CurSentence.split(" ");
 			if (p < curwords.length)
 				curSChar = curwords[p];
+			
 			
 			int predAction = predActions.get(p);
 			int goldAction = goldActions.get(p);
@@ -1457,9 +1344,9 @@ public class JointRN {
 				preGoldWordSense = preGoldWordSense == null ? ""
 						: preGoldWordSense;
 			}
-			
+
 			if (predAction == goldAction) {
-				if (predAction < 1000 && predAction >= 0) {//preAction=0,Y ; 1表示N, sep
+				if (predAction < 1000 && predAction >= 0) {
 					String curTmpWordSense = this.GetCurNormal(bestState, p);
 					curTmpWordSense = curTmpWordSense == null ? ""
 							: curTmpWordSense;
@@ -1472,22 +1359,22 @@ public class JointRN {
 
 					tmpState.Sep(curSChar, predAction, preTmpWordSense);
 					goldState.Sep(curSChar, predAction, preGoldWordSense);
-				} else if (predAction == 1000) {//append
+				} else if (predAction == 1000) {
 					tmpState.Add(curSChar);
 					goldState.Add(curSChar);
-				} else if (predAction == 2000) {//finish
-					System.out.println("Impossible.....");
-					tmpState.Finish(preTmpWordSense);
-					goldState.Finish(preGoldWordSense);
+				} else if (predAction == 2000) {
+//					System.out.println("Impossible.....");
+//					tmpState.Finish(preTmpWordSense);
+//					goldState.Finish(preGoldWordSense);
 				} else {
-					System.out.println("error gold action: "
-							+ Integer.toString(predAction));
+//					System.out.println("error gold action: "
+//							+ Integer.toString(predAction));
 				}
 				// System.out.println("aa"+ tmpState.toString());
 				currentScore = GetLocalFeaturesScore(tmpState, null, false);
 				scores[0] += currentScore;
 				scores[1] += currentScore;
-			} else {//predAction 不等于 goldAction
+			} else {
 				break;
 			}
 		}
@@ -1496,7 +1383,7 @@ public class JointRN {
 		}
 		List<String> goldFeatures = new ArrayList<String>();
 		List<String> predFeatures = new ArrayList<String>();
-		for (; p < predActions.size(); p++) { //predAction 不等于 goldAction 时，p的值
+		for (; p < predActions.size(); p++) {
 			String curSChar = "";
 			String preTmpWordSense = "";
 			String preGoldWordSense = "";
@@ -1549,6 +1436,7 @@ public class JointRN {
 			// System.out.println("bb "+ goldState.toString());
 			currentScore = GetLocalFeaturesScore(goldState, goldFeatures,false);
 			scores[1] += currentScore;
+
 		}
 
 		model.UpdateWeighth(goldFeatures, 1, curRoundIndexForTrain);
@@ -1609,8 +1497,8 @@ public class JointRN {
 
 			String thePOS = tempStr.substring(index + 1, tempStr.length());
 			int thePOSID = -1;
-			for (int idx = 0; idx < State.arrPOS.length; idx++) {
-				if (thePOS.equalsIgnoreCase(State.arrPOS[idx])) {
+			for (int idx = 0; idx < State.arrLabel.length; idx++) {
+				if (thePOS.equalsIgnoreCase(State.arrLabel[idx])) {
 					thePOSID = idx;
 					break;
 				}
@@ -1622,7 +1510,7 @@ public class JointRN {
 				goldActions.add(1000);
 
 			}
-			goldSentenceState.arrWord[wordNumber] = theWord;
+			goldSentenceState.arrEntity[wordNumber] = theWord;
 			goldSentenceState.arrNormal[wordNumber] = theSense;
 			goldSentenceState.arrTag[wordNumber] = thePOS;
 			wordNumber++;
@@ -1637,45 +1525,45 @@ public class JointRN {
 	public boolean CanSeperate(State state, String curSChar, String thePOS) {
 		// boolean bValid = true;
 
-		if (model.m_startCharFreq.containsKey(curSChar)
-				&& model.m_startCharFreq.get(curSChar) > 10
-				&& !model.m_startCharPOSSets.get(curSChar).containsKey(thePOS)) {
+		if (model.m_startWordFreq.containsKey(curSChar)
+				&& model.m_startWordFreq.get(curSChar) > 10
+				&& !model.m_startWordLabelSets.get(curSChar).containsKey(thePOS)) {
 			return false;
 		}
 		int length = state.size;
 		if (length >= 1) {
-			String theLastWord = state.arrWord[length - 1];
+			String theLastWord = state.arrEntity[length - 1];
 			String theLastPos = state.arrTag[length - 1];
 			String theLastSense = state.arrNormal[length - 1];
 
-			if ((model.m_wordFreq.containsKey(theLastWord)
-					&& model.m_wordFreq.get(theLastWord) > 10 && !model.m_wordPOSSets
+			if ((model.m_entityFreq.containsKey(theLastWord)
+					&& model.m_entityFreq.get(theLastWord) > 10 && !model.m_entityLabelSets
 					.get(theLastWord).containsKey(theLastPos))
-					|| (model.m_wordFreq.containsKey(theLastSense)
-							&& model.m_wordFreq.get(theLastSense) > 10 && !model.m_wordPOSSets
+					|| (model.m_entityFreq.containsKey(theLastSense)
+							&& model.m_entityFreq.get(theLastSense) > 10 && !model.m_entityLabelSets
 							.get(theLastSense).containsKey(theLastPos))) {
 				return false;
 			}
 
-			if (model.m_posCloseSet.containsKey(theLastPos)
-					&& (!model.m_posCloseSet.get(theLastPos).contains(
-							theLastWord) && !model.m_posCloseSet
+			if (model.m_labelCloseSet.containsKey(theLastPos)
+					&& (!model.m_labelCloseSet.get(theLastPos).contains(
+							theLastWord) && !model.m_labelCloseSet
 							.get(theLastPos).contains(theLastSense))) {
 				return false;
 			}
 
 			if (theLastSense != null && theLastSense.length() > 0) {
-				if ((model.m_wordFreq.containsKey(theLastSense) && model.m_wordFreq
+				if ((model.m_entityFreq.containsKey(theLastSense) && model.m_entityFreq
 						.get(theLastSense) > 10)) {
-					if (model.m_wordPOSSets.containsKey(theLastSense)
-							&& !model.m_wordPOSSets.get(theLastSense)
+					if (model.m_entityLabelSets.containsKey(theLastSense)
+							&& !model.m_entityLabelSets.get(theLastSense)
 									.containsKey(theLastPos)) {
 						return false;
 					}
 				}
 
-				if (model.m_posCloseSet.containsKey(theLastPos)
-						&& !model.m_posCloseSet.get(theLastPos).contains(
+				if (model.m_labelCloseSet.containsKey(theLastPos)
+						&& !model.m_labelCloseSet.get(theLastPos).contains(
 								theLastSense)) {
 					return false;
 				}
@@ -1736,7 +1624,7 @@ public class JointRN {
 			try {
 				fis = new BufferedInputStream(new FileInputStream(file));
 				BufferedReader reader = new BufferedReader(
-						new InputStreamReader(fis, "UTF8"));// 
+						new InputStreamReader(fis, "UTF8"));// 鐢�50M鐨勭紦鍐茶鍙栨枃鏈枃浠�
 				String line = "";
 
 				while ((line = reader.readLine()) != null) {
@@ -1798,9 +1686,8 @@ public class JointRN {
 			return state.arrNormal[state.size - 1];
 		}
 		int k = -1;
-		for (int i = 0; i < state.size; i++) {			
-//			k += state.arrWord[i].split("#").length;
-			k += new StringTokenizer(state.arrWord[i],"#").countTokens();
+		for (int i = 0; i < state.size; i++) {		
+			k += new StringTokenizer(state.arrEntity[i],"#").countTokens();
 			if (k >= index) {
 				if (i > 0)
 					strRet = state.arrNormal[i - 1];
@@ -1814,7 +1701,7 @@ public class JointRN {
 		String strRet = "";
 		int k = -1;
 		for (int i = 0; i < state.size; i++) {
-			k += state.arrWord[i].length();
+			k += state.arrEntity[i].length();
 			if (k >= index) {
 				strRet = state.arrNormal[i];
 				break;
